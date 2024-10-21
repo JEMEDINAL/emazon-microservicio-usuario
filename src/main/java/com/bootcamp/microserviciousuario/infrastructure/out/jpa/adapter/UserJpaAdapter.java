@@ -1,8 +1,10 @@
 package com.bootcamp.microserviciousuario.infrastructure.out.jpa.adapter;
 
+import com.bootcamp.microserviciousuario.application.dto.AuthResponse;
 import com.bootcamp.microserviciousuario.domain.model.Users;
 import com.bootcamp.microserviciousuario.domain.spi_output.IUserPersistancePort;
 import com.bootcamp.microserviciousuario.infrastructure.exception.NoExistRole;
+import com.bootcamp.microserviciousuario.infrastructure.jwt.JwtService;
 import com.bootcamp.microserviciousuario.infrastructure.out.jpa.entity.RolEntity;
 import com.bootcamp.microserviciousuario.infrastructure.out.jpa.entity.UsersEntity;
 import com.bootcamp.microserviciousuario.infrastructure.out.jpa.mapper.UserEntityMapper;
@@ -15,14 +17,19 @@ public class UserJpaAdapter implements IUserPersistancePort {
     private final UsersRepository usersRepository;
     private final UserEntityMapper userEntityMapper;
     private final RolesRepository rolesRepository;
+    private final JwtService jwtService;
 
     @Override
-    public void saveUser(Users user) {
+    public AuthResponse saveUser(Users user) {
         Long rol = user.getRol();
         RolEntity rolEntity = rolesRepository.findById(rol).orElseThrow(NoExistRole::new);
         UsersEntity usersEntity = userEntityMapper.userDomainToUserEntity(user);
         usersEntity.setRol(rolEntity);
 
         usersRepository.save(usersEntity);
+
+        return AuthResponse.builder()
+                .token(jwtService.getToken(usersEntity))
+                .build();
     }
 }

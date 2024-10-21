@@ -1,5 +1,6 @@
 package com.bootcamp.microserviciousuario.domain.usecase;
 
+import com.bootcamp.microserviciousuario.application.dto.AuthResponse;
 import com.bootcamp.microserviciousuario.domain.api_input.IUsersServicePort;
 import com.bootcamp.microserviciousuario.domain.encoder.PasswordEncoder;
 import com.bootcamp.microserviciousuario.domain.model.Users;
@@ -14,6 +15,7 @@ import static com.bootcamp.microserviciousuario.domain.usecase.constantsuserusec
 
 @Service
 public class UsersUseCase implements IUsersServicePort {
+
     private final IUserPersistancePort iUserPersistancePort;
     private final PasswordEncoder passwordEncoder;
 
@@ -23,7 +25,7 @@ public class UsersUseCase implements IUsersServicePort {
     }
 
     @Override
-    public void saveUser(Users user, String birthDate) {
+    public AuthResponse saveUser(Users user, String birthDate) {
         if(user.getName() == null || user.getName().trim().isEmpty()){
             throw new ValidNameUser();
         }
@@ -42,7 +44,7 @@ public class UsersUseCase implements IUsersServicePort {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         LocalDate parseBirthDate = validateAndParseDate(birthDate);
         user.setBirthDate(parseBirthDate);
-        iUserPersistancePort.saveUser(user);
+        return iUserPersistancePort.saveUser(user);
     }
 
     private LocalDate validateAndParseDate(String dateStr) {
